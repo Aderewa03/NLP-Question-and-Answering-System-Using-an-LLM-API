@@ -50,7 +50,7 @@ def build_prompt(processed_question: str, use_enhanced: bool = False) -> list:
     return [{"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_content}]
 
-# ===== Updated Gemini API call =====
+# ===== Fixed Gemini API call =====
 def call_llm_api(messages: list, use_mock: bool = False) -> str:
     if use_mock:
         return mock_llm_response(messages[-1]["content"])
@@ -63,9 +63,14 @@ def call_llm_api(messages: list, use_mock: bool = False) -> str:
     user_prompt = messages[-1]["content"]
 
     try:
-        # Use GenerativeModel instead of top-level generate
-        model = genai.GenerativeModel(model="gemini-pro")
-        response = model.generate(prompt=user_prompt, max_output_tokens=256, temperature=0.7)
+        # Correct usage: GenerativeModel() without 'model' in constructor
+        model = genai.GenerativeModel()
+        response = model.generate(
+            model="gemini-pro",
+            prompt=user_prompt,
+            max_output_tokens=256,
+            temperature=0.7
+        )
 
         # Extract text safely
         if hasattr(response, "text"):
@@ -75,6 +80,7 @@ def call_llm_api(messages: list, use_mock: bool = False) -> str:
             if "content" in cand:
                 return cand["content"]
         return str(response)
+
     except Exception as e:
         err = str(e)
         if "authentication" in err.lower() or "unauth" in err.lower():
