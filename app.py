@@ -50,6 +50,7 @@ def build_prompt(processed_question: str, use_enhanced: bool = False) -> list:
     return [{"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_content}]
 
+# ===== Updated Gemini API call =====
 def call_llm_api(messages: list, use_mock: bool = False) -> str:
     if use_mock:
         return mock_llm_response(messages[-1]["content"])
@@ -62,21 +63,17 @@ def call_llm_api(messages: list, use_mock: bool = False) -> str:
     user_prompt = messages[-1]["content"]
 
     try:
-        response = genai.generate(model="gemini-pro", prompt=user_prompt, max_output_tokens=256, temperature=0.7)
-        # extract text from response safely
+        # Use GenerativeModel instead of top-level generate
+        model = genai.GenerativeModel(model="gemini-pro")
+        response = model.generate(prompt=user_prompt, max_output_tokens=256, temperature=0.7)
+
+        # Extract text safely
         if hasattr(response, "text"):
             return response.text
-        if isinstance(response, dict):
-            if "candidates" in response and len(response["candidates"]) > 0:
-                cand = response["candidates"][0]
-                if isinstance(cand, dict) and "content" in cand:
-                    return cand["content"]
-            if "output" in response:
-                out = response["output"]
-                if isinstance(out, str):
-                    return out
-                if isinstance(out, list):
-                    return " ".join([item["content"] if isinstance(item, dict) and "content" in item else str(item) for item in out])
+        elif isinstance(response, dict) and "candidates" in response and len(response["candidates"]) > 0:
+            cand = response["candidates"][0]
+            if "content" in cand:
+                return cand["content"]
         return str(response)
     except Exception as e:
         err = str(e)
