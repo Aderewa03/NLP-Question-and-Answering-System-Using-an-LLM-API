@@ -80,7 +80,7 @@ def mock_llm_response(question: str) -> str:
     return "Mock Response: This is a simulated answer."
 
 
-# ===== Fixed Gemini API call (new SDK) =====
+# ===== Gemini API call (new SDK) =====
 def call_llm_api(user_prompt: str, use_mock: bool = False) -> str:
     if use_mock:
         return mock_llm_response(user_prompt)
@@ -116,11 +116,12 @@ def call_llm_api(user_prompt: str, use_mock: bool = False) -> str:
         return f"⚠️ Error calling Gemini API: {err}"
 
 
-# Initialize session state
+# Initialize session state (non-widget values only)
 if "history" not in st.session_state:
     st.session_state.history = []
-if "use_mock" not in st.session_state:
-    st.session_state.use_mock = os.getenv("USE_MOCK", "false").lower() == "true"
+
+# Default for the mock toggle, taken from an optional env var.
+MOCK_DEFAULT = os.getenv("USE_MOCK", "false").lower() == "true"
 
 # ================= UI =================
 st.title("🤖 LLM Q&A System")
@@ -134,6 +135,7 @@ with col1:
         height=100,
         placeholder="e.g., What is machine learning?",
         label_visibility="collapsed",
+        key="user_question_input",
     )
 
     if st.button("🚀 Get Answer", use_container_width=True):
@@ -141,7 +143,9 @@ with col1:
             with st.spinner("Processing your question..."):
                 processed = preprocess_question(user_question)
                 prompt = build_prompt(processed)
-                answer = call_llm_api(prompt, use_mock=st.session_state.use_mock)
+                answer = call_llm_api(
+                    prompt, use_mock=st.session_state.get("use_mock", MOCK_DEFAULT)
+                )
                 st.session_state.history.insert(
                     0,
                     {
@@ -164,10 +168,11 @@ with col1:
 
 with st.sidebar:
     st.header("📜 Recent Questions")
-    st.session_state.use_mock = st.checkbox(
-        "Use Mock Mode (No API Key)", value=st.session_state.use_mock
+    # The checkbox owns its own state via key="use_mock" — no manual assignment.
+    use_mock = st.checkbox(
+        "Use Mock Mode (No API Key)", value=MOCK_DEFAULT, key="use_mock"
     )
-    if st.session_state.use_mock:
+    if use_mock:
         st.info("🔄 Using simulated responses")
 
     st.markdown("---")
