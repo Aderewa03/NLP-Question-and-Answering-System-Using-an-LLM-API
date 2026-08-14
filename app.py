@@ -117,19 +117,29 @@ h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; color: var(--text); l
 }
 
 /* ---------- Text area ---------- */
+.stTextArea [data-baseweb="textarea"],
+.stTextArea [data-baseweb="base-input"] {
+  background: var(--glass) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  transition: all .2s ease;
+}
+.stTextArea [data-baseweb="textarea"]:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 0 26px rgba(59,130,246,.18) !important;
+}
 .stTextArea textarea {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  background: transparent !important;
   color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--accent-2);
   font-family: 'Inter', sans-serif; font-size: 1rem;
-  padding: 1rem; transition: all .2s ease;
+  padding: 1rem;
 }
-.stTextArea textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow), 0 0 26px rgba(59,130,246,.18);
+.stTextArea textarea::placeholder {
+  color: #5C688A !important;
+  -webkit-text-fill-color: #5C688A !important;
 }
-.stTextArea textarea::placeholder { color: #5C688A; }
 
 /* ---------- Button ---------- */
 .stButton > button {
