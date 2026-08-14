@@ -393,6 +393,6 @@ with st.sidebar:
 
 # ---- Footer ----
 st.markdown(
-    '<div class="footer-note">CSC415 / CSC331 AI Project 2 &nbsp;·&nbsp; Built with Streamlit &amp; Gemini</div>',
+    '<div class="footer-note">Built by Aderewa Adesola &nbsp;·&nbsp; Powered by Gemini</div>',
     unsafe_allow_html=True,
 )
