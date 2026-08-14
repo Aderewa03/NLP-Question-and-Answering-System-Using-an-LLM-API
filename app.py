@@ -21,10 +21,17 @@ Question: {processed_question}
 Provide a clear, factual answer. If applicable, cite reliable sources."""
 # ============================================
 
-# Model name. Model IDs change over time — if this ever stops working,
-# open Google AI Studio (aistudio.google.com) and copy the current free
-# "Flash" model ID here. It's a one-line swap.
-MODEL_NAME = "gemini-2.5-flash"
+# Google retires and renames Gemini models every few months. Rather than
+# hardcode one (which breaks when it's retired), the app tries these in order
+# and uses the first one your API key can access. 'gemini-flash-latest' always
+# resolves to a current model, so it's the safety net at the end.
+# If you want to force a specific model, put it first in this list.
+CANDIDATE_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-flash-latest",
+]
 
 # Page configuration
 st.set_page_config(
@@ -80,7 +87,19 @@ def mock_llm_response(question: str) -> str:
     return "Mock Response: This is a simulated answer."
 
 
-# ===== Gemini API call (new SDK) =====
+def _generate_once(model_name: str, user_prompt: str) -> str:
+    response = client.models.generate_content(
+        model=model_name,
+        contents=user_prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            max_output_tokens=256,
+        ),
+    )
+    return response.text or "(No answer returned.)"
+
+
+# ===== Gemini API call (new SDK, with model fallback) =====
 def call_llm_api(user_prompt: str, use_mock: bool = False) -> str:
     if use_mock:
         return mock_llm_response(user_prompt)
@@ -92,28 +111,35 @@ def call_llm_api(user_prompt: str, use_mock: bool = False) -> str:
     if not client:
         return "⚠️ Error: Could not initialise the Gemini client. Check your GEMINI_API_KEY."
 
-    try:
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                max_output_tokens=256,
-                temperature=0.7,
-            ),
-        )
-        return response.text or "(No answer returned.)"
+    # Try a model that already worked this session first, then the rest.
+    models_to_try = list(CANDIDATE_MODELS)
+    cached = st.session_state.get("working_model")
+    if cached:
+        models_to_try = [cached] + [m for m in models_to_try if m != cached]
 
-    except Exception as e:
-        err = str(e)
-        low = err.lower()
-        if "api key" in low or "unauth" in low or "permission" in low:
-            return "⚠️ Error: Authentication failed. Check your GEMINI_API_KEY."
-        if "quota" in low or "429" in low or "resource_exhausted" in low:
-            return "⚠️ Error: Rate limit / quota reached. Wait a moment and try again."
-        if "not found" in low or "404" in low:
-            return f"⚠️ Error: Model '{MODEL_NAME}' not found. Update MODEL_NAME to a current one from AI Studio."
-        return f"⚠️ Error calling Gemini API: {err}"
+    last_err = ""
+    for model_name in models_to_try:
+        try:
+            answer = _generate_once(model_name, user_prompt)
+            st.session_state["working_model"] = model_name  # remember what worked
+            return answer
+        except Exception as e:
+            err = str(e)
+            low = err.lower()
+            # Hard stops — no point trying other models for these.
+            if "api key" in low or "unauth" in low or "permission" in low:
+                return "⚠️ Error: Authentication failed. Check your GEMINI_API_KEY."
+            if "quota" in low or "429" in low or "resource_exhausted" in low:
+                return "⚠️ Error: Rate limit / quota reached. Wait a moment and try again."
+            # Otherwise (model not found, etc.) remember and try the next one.
+            last_err = err
+            continue
+
+    return (
+        "⚠️ Error: none of the candidate models were available on your key. "
+        "Open Google AI Studio, check which models you have access to, and add "
+        f"one to CANDIDATE_MODELS at the top of app.py. Last issue: {last_err}"
+    )
 
 
 # Initialize session state (non-widget values only)
