@@ -93,7 +93,7 @@ def _generate_once(model_name: str, user_prompt: str) -> str:
         contents=user_prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
-            max_output_tokens=256,
+            max_output_tokens=1024,
         ),
     )
     return response.text or "(No answer returned.)"
