@@ -1,4 +1,2 @@
-streamlit==1.29.0
-openai==1.6.1
-python-dotenv==1.0.0
-google-generativeai
+streamlit
+google-genai
