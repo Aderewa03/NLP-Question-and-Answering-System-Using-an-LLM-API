@@ -36,9 +36,172 @@ CANDIDATE_MODELS = [
 # Page configuration
 st.set_page_config(
     page_title="LLM Q&A System",
-    page_icon="🤖",
+    page_icon="◆",
     layout="wide",
     initial_sidebar_state="expanded",
+)
+
+# ============================================================
+#  THEME  —  clean blue / futuristic. Pure CSS over Streamlit.
+# ============================================================
+st.markdown(
+    """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --glass: rgba(255,255,255,0.035);
+  --glass-border: rgba(96,165,250,0.18);
+  --accent: #3B82F6;
+  --accent-2: #22D3EE;
+  --accent-glow: rgba(59,130,246,0.35);
+  --text: #E7EEFB;
+  --muted: #8A97B8;
+}
+
+/* ---------- App background ---------- */
+.stApp {
+  background:
+    radial-gradient(1200px 600px at 12% -10%, rgba(37,99,235,0.20), transparent 60%),
+    radial-gradient(1000px 700px at 100% 0%, rgba(34,211,238,0.10), transparent 55%),
+    linear-gradient(180deg, #070C1C 0%, #05080F 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ---------- Center + constrain content ---------- */
+[data-testid="stMainBlockContainer"], .block-container {
+  max-width: 820px;
+  padding-top: 3.5rem;
+  padding-bottom: 4rem;
+}
+
+/* ---------- Hide Streamlit chrome ---------- */
+header[data-testid="stHeader"] { background: transparent; }
+[data-testid="stToolbar"] { right: 1rem; }
+[data-testid="stDecoration"] { display: none; }
+[data-testid="stStatusWidget"] { display: none; }
+#MainMenu, footer { visibility: hidden; }
+
+/* ---------- Typography ---------- */
+h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; color: var(--text); letter-spacing: -0.02em; }
+[data-testid="stMarkdownContainer"], .stMarkdown, p, li, label { color: var(--text); }
+
+/* ---------- Hero ---------- */
+.hero { text-align: center; margin: 0 0 2.4rem 0; }
+.hero-title {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 2.7rem;
+  line-height: 1.1; margin: .55rem 0 .5rem 0;
+  background: linear-gradient(90deg, #8FBBFF 0%, #22D3EE 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-sub { color: var(--muted); font-size: 1.03rem; margin: 0; }
+.status {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
+  color: #7FE7C4; border: 1px solid rgba(127,231,196,.28);
+  padding: .32rem .8rem; border-radius: 999px; background: rgba(127,231,196,.06);
+}
+.status .dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #34D399;
+  box-shadow: 0 0 10px #34D399; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ---------- Field label ---------- */
+.field-label {
+  font-family: 'JetBrains Mono', monospace; font-size: .72rem;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--accent-2);
+  margin-bottom: .55rem;
+}
+
+/* ---------- Text area ---------- */
+.stTextArea textarea {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  color: var(--text) !important;
+  font-family: 'Inter', sans-serif; font-size: 1rem;
+  padding: 1rem; transition: all .2s ease;
+}
+.stTextArea textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 0 26px rgba(59,130,246,.18);
+}
+.stTextArea textarea::placeholder { color: #5C688A; }
+
+/* ---------- Button ---------- */
+.stButton > button {
+  background: linear-gradient(135deg, #2E7BFF 0%, #22D3EE 100%);
+  color: #04101F !important;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem;
+  border: none; border-radius: 12px; padding: .7rem 1rem; width: 100%;
+  transition: all .2s ease; box-shadow: 0 6px 20px rgba(46,123,255,.32);
+}
+.stButton > button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(46,123,255,.5), 0 0 30px rgba(34,211,238,.28);
+}
+.stButton > button:active { transform: translateY(0); }
+.stButton > button:focus:not(:active) { color: #04101F !important; }
+
+/* ---------- Glass cards (bordered containers) ---------- */
+[data-testid="stVerticalBlockBorderWrapper"] {
+  background: var(--glass);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+/* ---------- Result pieces ---------- */
+.result-label {
+  font-family: 'JetBrains Mono', monospace; font-size: .72rem;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--accent-2);
+  margin-bottom: .5rem;
+}
+.processed-chip {
+  font-family: 'JetBrains Mono', monospace; color: #A9BCE6; font-size: .92rem;
+  background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.18);
+  padding: .55rem .85rem; border-radius: 10px; display: inline-block;
+}
+.model-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: .72rem;
+  color: var(--muted); margin-top: 1rem; letter-spacing: .04em;
+}
+
+/* ---------- Sidebar ---------- */
+[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, rgba(10,18,41,.92), rgba(6,10,25,.92));
+  border-right: 1px solid rgba(96,165,250,.12);
+}
+[data-testid="stSidebar"] * { color: var(--text); }
+[data-testid="stExpander"] details {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(96,165,250,.14) !important;
+  border-radius: 12px;
+}
+
+/* ---------- Alerts ---------- */
+[data-testid="stAlert"] {
+  background: rgba(59,130,246,.08);
+  border: 1px solid rgba(59,130,246,.22);
+  border-radius: 12px; color: var(--text);
+}
+[data-testid="stAlert"] * { color: var(--text); }
+
+/* ---------- Dividers ---------- */
+hr { border-color: rgba(96,165,250,.12) !important; }
+
+/* ---------- Footer note ---------- */
+.footer-note {
+  text-align: center; color: var(--muted); font-size: .82rem;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: .04em; margin-top: 2rem;
+}
+</style>
+""",
+    unsafe_allow_html=True,
 )
 
 
@@ -105,11 +268,11 @@ def call_llm_api(user_prompt: str, use_mock: bool = False) -> str:
         return mock_llm_response(user_prompt)
 
     if not genai:
-        return "⚠️ Error: google-genai package not installed. Run: pip install google-genai"
+        return "Error: google-genai package not installed. Run: pip install google-genai"
     if not GEMINI_KEY:
-        return "⚠️ Error: GEMINI_API_KEY not found. Set it in Streamlit secrets or environment variables."
+        return "Error: GEMINI_API_KEY not found. Set it in Streamlit secrets or environment variables."
     if not client:
-        return "⚠️ Error: Could not initialise the Gemini client. Check your GEMINI_API_KEY."
+        return "Error: Could not initialise the Gemini client. Check your GEMINI_API_KEY."
 
     # Try a model that already worked this session first, then the rest.
     models_to_try = list(CANDIDATE_MODELS)
@@ -126,17 +289,15 @@ def call_llm_api(user_prompt: str, use_mock: bool = False) -> str:
         except Exception as e:
             err = str(e)
             low = err.lower()
-            # Hard stops — no point trying other models for these.
             if "api key" in low or "unauth" in low or "permission" in low:
-                return "⚠️ Error: Authentication failed. Check your GEMINI_API_KEY."
+                return "Error: Authentication failed. Check your GEMINI_API_KEY."
             if "quota" in low or "429" in low or "resource_exhausted" in low:
-                return "⚠️ Error: Rate limit / quota reached. Wait a moment and try again."
-            # Otherwise (model not found, etc.) remember and try the next one.
+                return "Error: Rate limit / quota reached. Wait a moment and try again."
             last_err = err
             continue
 
     return (
-        "⚠️ Error: none of the candidate models were available on your key. "
+        "Error: none of the candidate models were available on your key. "
         "Open Google AI Studio, check which models you have access to, and add "
         f"one to CANDIDATE_MODELS at the top of app.py. Last issue: {last_err}"
     )
@@ -146,73 +307,92 @@ def call_llm_api(user_prompt: str, use_mock: bool = False) -> str:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Default for the mock toggle, taken from an optional env var.
 MOCK_DEFAULT = os.getenv("USE_MOCK", "false").lower() == "true"
 
 # ================= UI =================
-st.title("🤖 LLM Q&A System")
-st.caption("Ask any question and get AI-powered answers instantly")
+st.markdown(
+    """
+<div class="hero">
+  <div class="status"><span class="dot"></span> System online</div>
+  <h1 class="hero-title">LLM Q&amp;A System</h1>
+  <p class="hero-sub">Ask anything and get clear, AI-powered answers in seconds.</p>
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.subheader("Ask Your Question")
+# ---- Input card ----
+with st.container(border=True):
+    st.markdown('<div class="field-label">Your question</div>', unsafe_allow_html=True)
     user_question = st.text_area(
-        "Type your question here:",
-        height=100,
+        "Your question",
+        height=120,
         placeholder="e.g., What is machine learning?",
         label_visibility="collapsed",
         key="user_question_input",
     )
+    ask = st.button("Get Answer")
 
-    if st.button("🚀 Get Answer", use_container_width=True):
-        if user_question.strip():
-            with st.spinner("Processing your question..."):
-                processed = preprocess_question(user_question)
-                prompt = build_prompt(processed)
-                answer = call_llm_api(
-                    prompt, use_mock=st.session_state.get("use_mock", MOCK_DEFAULT)
+# ---- Handle a request ----
+if ask:
+    if user_question.strip():
+        with st.spinner("Thinking..."):
+            processed = preprocess_question(user_question)
+            prompt = build_prompt(processed)
+            answer = call_llm_api(
+                prompt, use_mock=st.session_state.get("use_mock", MOCK_DEFAULT)
+            )
+            st.session_state.history.insert(
+                0,
+                {
+                    "question": user_question,
+                    "processed": processed,
+                    "answer": answer,
+                    "timestamp": time.strftime("%H:%M:%S"),
+                },
+            )
+            if len(st.session_state.history) > 5:
+                st.session_state.history.pop()
+
+        st.write("")
+        with st.container(border=True):
+            st.markdown('<div class="result-label">Processed question</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="processed-chip">{processed}</div>', unsafe_allow_html=True)
+
+        with st.container(border=True):
+            st.markdown('<div class="result-label">Answer</div>', unsafe_allow_html=True)
+            st.markdown(answer)
+            model_used = st.session_state.get("working_model")
+            if model_used and not st.session_state.get("use_mock", MOCK_DEFAULT):
+                st.markdown(
+                    f'<div class="model-tag">answered by {model_used}</div>',
+                    unsafe_allow_html=True,
                 )
-                st.session_state.history.insert(
-                    0,
-                    {
-                        "question": user_question,
-                        "processed": processed,
-                        "answer": answer,
-                        "timestamp": time.strftime("%H:%M:%S"),
-                    },
-                )
-                if len(st.session_state.history) > 5:
-                    st.session_state.history.pop()
+    else:
+        st.warning("Please enter a question.")
 
-            st.markdown("---")
-            st.markdown("**Processed Question**")
-            st.write(processed)
-            st.markdown("**Answer**")
-            st.write(answer)
-        else:
-            st.warning("⚠️ Please enter a question.")
-
+# ---- Sidebar ----
 with st.sidebar:
-    st.header("📜 Recent Questions")
-    # The checkbox owns its own state via key="use_mock" — no manual assignment.
-    use_mock = st.checkbox(
-        "Use Mock Mode (No API Key)", value=MOCK_DEFAULT, key="use_mock"
-    )
+    st.header("Recent questions")
+    use_mock = st.checkbox("Use mock mode (no API key)", value=MOCK_DEFAULT, key="use_mock")
     if use_mock:
-        st.info("🔄 Using simulated responses")
+        st.info("Using simulated responses.")
 
     st.markdown("---")
     if st.session_state.history:
         for idx, item in enumerate(st.session_state.history):
-            with st.expander(f"Q{idx + 1}: {item['question'][:40]}... ({item['timestamp']})"):
+            with st.expander(f"Q{idx + 1}: {item['question'][:38]}...  ({item['timestamp']})"):
                 st.markdown(f"**Processed:** {item['processed']}")
                 st.markdown(f"**Answer:** {item['answer']}")
     else:
-        st.info("No questions asked yet. Start by asking something!")
+        st.info("No questions yet. Ask something to get started.")
 
-    if st.button("🗑️ Clear History"):
+    if st.button("Clear history"):
         st.session_state.history = []
         st.rerun()
 
-st.markdown("---")
-st.caption("CSC415/CSC331 AI Project 2 | Built with Streamlit & Gemini")
+# ---- Footer ----
+st.markdown(
+    '<div class="footer-note">CSC415 / CSC331 AI Project 2 &nbsp;·&nbsp; Built with Streamlit &amp; Gemini</div>',
+    unsafe_allow_html=True,
+)
